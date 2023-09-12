@@ -33,9 +33,11 @@ type DepositDialogProps = {
 const CheckoutForm = ({ handleClose }: { handleClose: () => void }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const [isSubmitting, setSubmitting] = useState<boolean>(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setSubmitting(true);
 
     if (!stripe || !elements) {
       return;
@@ -52,18 +54,19 @@ const CheckoutForm = ({ handleClose }: { handleClose: () => void }) => {
     console.log(result);
 
     if (result.error) {
-      console.log(result.error.message);
+      enqueueSnackbar(`Deposit failed.`, { variant: 'error', anchorOrigin: { vertical: 'top', horizontal: 'right' } });
     } else {
       enqueueSnackbar(`Successfully deposited.`, { variant: 'success', anchorOrigin: { vertical: 'top', horizontal: 'right' } });
       handleClose();
     }
+    setSubmitting(false);
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <Stack spacing={2} px={1} py={1}>
         <PaymentElement />
-        <Button disabled={!stripe} type="submit">
+        <Button disabled={!stripe || isSubmitting} type="submit">
           Submit
         </Button>
       </Stack>

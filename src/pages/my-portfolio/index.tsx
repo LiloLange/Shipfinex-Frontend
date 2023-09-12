@@ -1,4 +1,4 @@
-import { ReactElement, useEffect } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 
 import NextLink from 'next/link';
 
@@ -23,12 +23,21 @@ import { UserRole } from 'types/auth';
 const MyPortfolio = () => {
   // const theme = useTheme();
   const { data: session } = useSession();
+  const [total, setTotal] = useState<any>({});
+
   useEffect(() => {
-    console.log(session);
+    fetch('/api/investment').then(async (res) => {
+      if (res.status === 200) {
+        const { total } = await res.json();
+        console.log(total);
+        setTotal(total);
+      }
+    });
   }, []);
+
   return (
     <Page title="My Portfolio">
-      {session && (session.token.kycStatus === undefined || session?.token.kycStatus === 0) && (
+      {session && (session.token.kycStatus === undefined || session?.token.kycStatus === 2) && (
         <Box width="max-content" mx="auto" my={18}>
           <Paper style={{ backgroundColor: 'transparent' }}>
             <Stack mt={6} spacing={1} alignItems="center" pt={6} pb={4} px={8}>
@@ -57,18 +66,18 @@ const MyPortfolio = () => {
           </Paper>
         </Box>
       )}
-      {session && session.token.kycStatus === 2 && session.token.role === UserRole.INVESTOR && (
-        <Grid container my={4} spacing={4.5}>
+      {session && session.token.kycStatus === 0 && session.token.role === UserRole.INVESTOR && (
+        <Grid container spacing={4.5}>
           <Grid item xs={12}>
             <Grid container spacing={2}>
               <Grid item xs={12} md={4}>
-                <FinancialReportCard title="Total Investment" count="0" color="invest" />
+                <FinancialReportCard title="Total investment" count={total.investment || 0} color="invest" />
               </Grid>
               <Grid item xs={12} md={4}>
-                <FinancialReportCard title="Current Value" count="0" color="balance" />
+                <FinancialReportCard title="Claimed rewards" count={total.claimed || 0} color="balance" />
               </Grid>
               <Grid item xs={12} md={4}>
-                <FinancialReportCard title="Revenue & Rewards" count="0" color="reward" />
+                <FinancialReportCard title="Claimable rewards" count={total.claimable || 0} color="reward" />
               </Grid>
             </Grid>
           </Grid>

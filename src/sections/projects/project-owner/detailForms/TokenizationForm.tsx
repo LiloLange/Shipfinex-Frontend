@@ -1,8 +1,9 @@
+import { useState } from 'react';
+
 // next
 import { useRouter } from 'next/router';
-import axios from 'axios';
 import { useSession } from 'next-auth/react';
-import { signOut } from 'next-auth/react';
+
 // material-ui
 import { Button, Grid, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
 
@@ -12,6 +13,8 @@ import * as yup from 'yup';
 
 // project imports
 import AnimateButton from 'components/@extended/AnimateButton';
+import axios from 'utils/axios';
+import { enqueueSnackbar } from 'notistack';
 
 const validationSchema = yup.object({
   tokenName: yup.string().required('Token Name is required'),
@@ -19,22 +22,20 @@ const validationSchema = yup.object({
   decimal: yup.number().integer('Invalid decimal value').min(1, 'Invalid Decimal').required('Token Decimal is required'),
   tonnage: yup.number().positive('Invalid tonnage value').required('Tonnage is required'),
   assetValue: yup.number().positive('Invalid asset value').required('Asset Value is required'),
-  tokenizing: yup
+  tokenizingPercentage: yup
     .number()
     .positive('Invalid tokenizing %')
     .max(100, 'Invalid tokenizing %')
     .default(100)
     .required('Percentage of tokenizing is required'),
-  offering: yup
+  offeringPercentage: yup
     .number()
     .positive('Invalid offering %')
-    .lessThan(50, 'Must be less than 50%')
+    .lessThan(100, 'Must be less than 100%')
     .not([0], 'Invalid offering %')
     .required('Percentage of offering is required'),
   minimumInvestment: yup.number().required('Minimum Investment is required')
 });
-
-// ==============================|| VALIDATION WIZARD - PAYMENT ||============================== //
 
 export type Tokenization = {
   tokenName?: string;
@@ -55,10 +56,10 @@ interface TokenizationFormProps {
 }
 
 export default function TokenizationForm({ tokenization, setTokenization, projectId }: TokenizationFormProps) {
+  const [isSubmitting, setSubmitting] = useState<boolean>(false);
   const router = useRouter();
   const { data: session } = useSession();
 
-  console.log(tokenization);
   const formik = useFormik({
     initialValues: {
       tokenized: tokenization.tokenized,
@@ -67,13 +68,15 @@ export default function TokenizationForm({ tokenization, setTokenization, projec
       decimal: tokenization.decimal,
       tonnage: tokenization.tonnage,
       assetValue: tokenization.assetValue,
-      tokenizingPercentage: tokenization.tokenizingPercentage,
+      tokenizingPercentage: tokenization.tokenizingPercentage || 100,
       offeringPercentage: tokenization.offeringPercentage,
       minimumInvestment: tokenization.minimumInvestment
     },
 
     validationSchema,
     onSubmit: (values) => {
+      setSubmitting(true);
+
       const tokenInfo = {
         tokenized: values.tokenized,
         tokenName: values.tokenName,
@@ -85,21 +88,27 @@ export default function TokenizationForm({ tokenization, setTokenization, projec
         offeringPercentage: values.offeringPercentage,
         minimumInvestment: values.minimumInvestment
       };
-      axios.defaults.headers.common = { Authorization: `bearer ${session?.token.accessToken as string}` };
-      axios
-        .post(`${process.env.SHIPFINEX_BACKEND_URL}/project/${projectId}/tokenization`, tokenInfo)
-        .then(async (res) => {
-          if (res.status === 401) {
-            signOut({ redirect: false });
 
-            router.push({
-              pathname: '/signin',
-              query: {}
+      axios.defaults.headers.common = { Authorization: `bearer ${session?.token.accessToken as string}` };
+
+      axios
+        .post(`/api/v1/project/${projectId}/tokenization`, tokenInfo)
+        .then(async (res) => {
+          if (res.status === 200) {
+            enqueueSnackbar('Tokenized successfully.', {
+              variant: 'success',
+              anchorOrigin: { vertical: 'top', horizontal: 'right' }
             });
-          } else {
+
             setTokenization(tokenInfo);
             router.push('/projects');
+          } else {
+            enqueueSnackbar('Tokenized failed.', {
+              variant: 'success',
+              anchorOrigin: { vertical: 'top', horizontal: 'right' }
+            });
           }
+          setSubmitting(false);
         })
         .catch((err) => {
           console.log(err);
@@ -218,8 +227,8 @@ export default function TokenizationForm({ tokenization, setTokenization, projec
             <Stack spacing={0.5}>
               <InputLabel>% Tokenizing *</InputLabel>
               <TextField
-                id="tokenizing"
-                name="tokenizing"
+                id="tokenizingPercentage"
+                name="tokenizingPercentage"
                 placeholder="Enter % Tokenizing *"
                 value={formik.values.tokenizingPercentage}
                 onChange={formik.handleChange}
@@ -228,7 +237,7 @@ export default function TokenizationForm({ tokenization, setTokenization, projec
                 fullWidth
                 autoComplete="tokenization name"
                 InputProps={{
-                  readOnly: router.query.projectId !== 'add',
+                  readOnly: true,
                   endAdornment: <InputAdornment position="start">%</InputAdornment>
                 }}
               />
@@ -238,8 +247,8 @@ export default function TokenizationForm({ tokenization, setTokenization, projec
             <Stack spacing={0.5}>
               <InputLabel>% Offering *</InputLabel>
               <TextField
-                id="offering"
-                name="offering"
+                id="offeringPercentage"
+                name="offeringPercentage"
                 placeholder="Enter % Offering *"
                 value={formik.values.offeringPercentage}
                 onChange={formik.handleChange}
@@ -272,7 +281,7 @@ export default function TokenizationForm({ tokenization, setTokenization, projec
               <InputLabel>Offering</InputLabel>
               <TextField
                 placeholder="Enter Offering"
-                value={((formik.values.offeringPercentage || 0) * (formik.values.assetValue || 0)) / 100}
+                value={(formik.values.offeringPercentage || 0) * (formik.values.tonnage || 0) * 10}
                 InputProps={{
                   readOnly: true,
                   startAdornment: <InputAdornment position="start">$</InputAdornment>
@@ -301,16 +310,17 @@ export default function TokenizationForm({ tokenization, setTokenization, projec
               <Select
                 value={formik.values.minimumInvestment}
                 onChange={(ev) => formik.setFieldValue('minimumInvestment', ev.target.value)}
+                error={formik.touched.minimumInvestment && Boolean(formik.errors.minimumInvestment)}
                 displayEmpty
                 inputProps={{ 'aria-label': 'Tokenization Minimum Investment', readOnly: router.query.projectId !== 'add' }}
                 placeholder="Select Minimum Investment"
               >
                 <MenuItem>Select Minimum Investment</MenuItem>
-                <MenuItem value={0}>1x MRN</MenuItem>
-                <MenuItem value={1}>2x MRN</MenuItem>
-                <MenuItem value={2}>3x MRN</MenuItem>
-                <MenuItem value={3}>4x MRN</MenuItem>
-                <MenuItem value={4}>5x MRN</MenuItem>
+                <MenuItem value={10}>$ 10</MenuItem>
+                <MenuItem value={50}>$ 50</MenuItem>
+                <MenuItem value={100}>$ 100</MenuItem>
+                <MenuItem value={500}>$ 500</MenuItem>
+                <MenuItem value={1000}>$ 1000</MenuItem>
               </Select>
             </Stack>
           </Grid>
@@ -318,7 +328,7 @@ export default function TokenizationForm({ tokenization, setTokenization, projec
             <Grid item xs={12}>
               <Stack direction="row" justifyContent="end">
                 <AnimateButton>
-                  <Button variant="contained" type="submit" sx={{ my: 3, ml: 1 }}>
+                  <Button variant="contained" type="submit" sx={{ my: 3, ml: 1 }} disabled={isSubmitting}>
                     Create Token
                   </Button>
                 </AnimateButton>

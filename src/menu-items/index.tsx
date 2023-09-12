@@ -14,14 +14,7 @@ import Reward from './icons/Reward';
 import Transaction from './icons/Transaction';
 import Wallet from './icons/Wallet';
 
-import {
-  DashboardOutlined,
-  TeamOutlined,
-  SwapOutlined,
-  SettingOutlined,
-  FileProtectOutlined,
-  UsergroupAddOutlined
-} from '@ant-design/icons';
+import { DashboardOutlined, TeamOutlined, SettingOutlined, FileProtectOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 
 // ==============================|| MENU ITEMS - COMPONENTS ||============================== //
 
@@ -73,7 +66,7 @@ const menuItems: NavItemType[] = [
   },
   {
     id: 'project-transactions',
-    icon: SwapOutlined,
+    icon: Transaction,
     search: 'project-transactions',
     title: <FormattedMessage id="project-transactions" />,
     type: 'item',

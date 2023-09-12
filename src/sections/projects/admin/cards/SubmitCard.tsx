@@ -1,5 +1,8 @@
 import { ChangeEvent, useState } from 'react';
 
+// next
+import { useSession } from 'next-auth/react';
+
 // material-ui
 import {
   Button,
@@ -20,6 +23,8 @@ import {
 
 // project imports
 import MainCard from 'components/MainCard';
+import axios from 'utils/axios';
+import { enqueueSnackbar } from 'notistack';
 
 // ==============================|| PREVIEW CARD ||============================== //
 
@@ -29,15 +34,15 @@ type Log = {
 };
 
 type Props = {
-  projectStatus?: number;
-  projectName?: string;
-  handleSubmit: (status: number, comment: string) => void;
+  data: any;
   logs?: Log[];
 };
 
 const SubmitCard = (props: Props) => {
-  const [newStatus, setNewStatus] = useState<number>(props.projectStatus || 0);
+  const [newStatus, setNewStatus] = useState<number>(props.data.allowance || 0);
   const [comments, setComments] = useState<string>();
+  const { data: session } = useSession();
+  const [isSubmitting, setSubmitting] = useState<boolean>(false);
 
   const theme = useTheme();
 
@@ -50,24 +55,41 @@ const SubmitCard = (props: Props) => {
   };
 
   const handleSubmit = () => {
-    props.handleSubmit(newStatus, comments || '');
+    setSubmitting(true);
+    axios.defaults.headers.common = { Authorization: `bearer ${session?.token.accessToken as string}` };
+    axios
+      .post(`/api/v1/project/${props.data._id}/submit`, { allowance: newStatus })
+      .then(() => {
+        setSubmitting(false);
+        enqueueSnackbar('Project submitted successfully.', {
+          variant: 'success',
+          anchorOrigin: { vertical: 'top', horizontal: 'right' }
+        });
+      })
+      .catch((error) => {
+        setSubmitting(false);
+        enqueueSnackbar('Project submission failed.', {
+          variant: 'error',
+          anchorOrigin: { vertical: 'top', horizontal: 'right' }
+        });
+      });
   };
 
   return (
-    <MainCard>
+    <MainCard style={{ border: '1px solid grey', borderRadius: '15px' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Typography variant="h4">Project Status</Typography>
         <Typography
           variant="h4"
           color={
-            props.projectStatus === 2
+            props.data.allowance === 1
               ? theme.palette.success.main
-              : props.projectStatus === 1
+              : props.data.allowance === 2
               ? theme.palette.error.main
               : theme.palette.warning.main
           }
         >
-          {props.projectStatus === 2 ? 'Approved' : props.projectStatus === 1 ? 'Rejected' : 'Pending'}
+          {props.data.allowance === 1 ? 'Approved' : props.data.allowance === 2 ? 'Rejected' : 'Pending'}
         </Typography>
       </Stack>
       <Divider style={{ marginTop: 16 }} />
@@ -78,7 +100,7 @@ const SubmitCard = (props: Props) => {
               Project Name
             </Typography>
             <Typography variant="body2" fontWeight={700}>
-              {props.projectName}
+              {props.data.projectName}
             </Typography>
           </Stack>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -93,8 +115,8 @@ const SubmitCard = (props: Props) => {
               inputProps={{ 'aria-label': 'Project Owner Statistics Filter' }}
             >
               <MenuItem value={0}>Pending</MenuItem>
-              <MenuItem value={2}>Approved</MenuItem>
-              <MenuItem value={1}>Rejected</MenuItem>
+              <MenuItem value={1}>Approve</MenuItem>
+              <MenuItem value={2}>Reject</MenuItem>
             </Select>
           </Stack>
           <Divider />
@@ -125,7 +147,7 @@ const SubmitCard = (props: Props) => {
             </List>
           </Stack>
           <TextField value={comments} placeholder="Add Comments" onChange={handleCommentsChange} multiline />
-          <Button variant="contained" onClick={handleSubmit}>
+          <Button variant="contained" onClick={handleSubmit} disabled={isSubmitting}>
             Submit
           </Button>
         </Stack>

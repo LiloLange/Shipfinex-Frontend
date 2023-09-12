@@ -2,13 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 
 // next
 import NextLink from 'next/link';
-import Image from 'next/image';
 
 // material-ui
 import {
   Box,
   Link,
-  Button,
   Pagination,
   Stack,
   Table,
@@ -17,7 +15,9 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography
+  Typography,
+  Button,
+  CircularProgress
 } from '@mui/material';
 
 // projects
@@ -28,6 +28,7 @@ import { InboxOutlined } from '@ant-design/icons';
 
 // types
 import { KeyedObject } from 'types/root';
+import { enqueueSnackbar } from 'notistack';
 
 // table columns
 interface ColumnProps {
@@ -39,15 +40,14 @@ interface ColumnProps {
 }
 
 const columns: ColumnProps[] = [
-  { id: 'projectName', label: 'Project Name', minWidth: 20, align: 'left' },
-  { id: 'invested', label: 'Invested', minWidth: 15, align: 'center' },
-  { id: 'valueNow', label: 'Value Now', minWidth: 15, align: 'center' },
-  { id: 'dividend', label: 'Dividend', minWidth: 15, align: 'center' },
-  { id: 'rewards', label: 'Revenue & Rewards', minWidth: 20, align: 'center' },
-  { id: 'action', label: 'Action', minWidth: 15, align: 'center' }
+  { id: 'projectName', label: 'Project name', minWidth: 17, align: 'left' },
+  { id: 'tokenName', label: 'Token name', minWidth: 17, align: 'left' },
+  { id: 'tokenPrice', label: 'Token price', minWidth: 17, align: 'left' },
+  { id: 'invested', label: 'Invested', minWidth: 17, align: 'left' },
+  { id: 'rewards', label: 'Revenue & Rewards', minWidth: 16, align: 'left' },
+  { id: 'action', label: '', minWidth: 16, align: 'left' }
+  // { id: 'action', label: 'Action', minWidth: 25, align: 'center' }
 ];
-
-const rows: any[] = [];
 
 // ==============================|| PORTFOLIIO TRANSACTIONS TABLE ||============================== //
 
@@ -55,10 +55,31 @@ export default function MyListings() {
   const headRowRef = useRef<HTMLDivElement>(null);
   const [totalRows, setTotalRows] = useState<number>(0);
   const { currentPage, jump } = usePagination(100, 25);
+  const [rows, setRows] = useState<any[]>([]);
+  const [isCliaming, setClaiming] = useState<any>({});
 
   useEffect(() => {
-    setTotalRows(100);
+    fetch('/api/investment').then(async (res) => {
+      if (res.status === 200) {
+        const { data } = await res.json();
+        setTotalRows(data.length);
+        setRows(data);
+      }
+    });
   }, []);
+
+  const handleClaim = (projectId: string) => {
+    setClaiming((_claiming: any) => ({ ..._claiming, [projectId]: true }));
+
+    fetch(`/api/project/claim?projectId=${projectId}`).then(async (res) => {
+      if (res.status === 200) {
+        enqueueSnackbar(`Successfully claimed.`, { variant: 'success', anchorOrigin: { vertical: 'top', horizontal: 'right' } });
+      } else {
+        enqueueSnackbar(`Claim failed.`, { variant: 'error', anchorOrigin: { vertical: 'top', horizontal: 'right' } });
+      }
+      setClaiming((_claiming: any) => ({ ..._claiming, [projectId]: false }));
+    });
+  };
 
   return (
     <Box>
@@ -83,30 +104,54 @@ export default function MyListings() {
             </TableHead>
             <TableBody>
               {rows.map((row: KeyedObject, _index) => (
-                <TableRow sx={{ py: 3 }} hover role="checkbox" tabIndex={-1} key={row.code}>
+                <TableRow sx={{ py: 3 }} hover role="checkbox" tabIndex={-1} key={`my-listings-row-${row.code}`}>
                   {columns.map((column) => {
-                    const value = row[column.id];
                     return (
                       <TableCell key={`my-listings-${column.id}`} align={column.align}>
-                        {column.id === 'rewards' && <Typography color="success">{value}</Typography>}
-                        {column.id === 'projectName' && (
-                          <Stack direction="row" spacing={1}>
-                            <Image src="" alt="" />
-                            <Typography>123</Typography>
-                            <Typography color="textSecondary">234</Typography>
+                        {column.id === 'tokenPrice' && <Typography color="success">$ {row.price}</Typography>}
+                        {column.id === 'tokenName' && <Typography>{row.project.tokenization.tokenName}</Typography>}
+                        {column.id === 'invested' && <Typography>$ {row.amount}</Typography>}
+                        {column.id === 'rewards' && (
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Typography>$ {row.claimedRewards} / </Typography>
+                            <Button
+                              onClick={() => handleClaim(row.project._id)}
+                              style={{ padding: '8px' }}
+                              disabled={Number(row.claimableRewards) === 0 || isCliaming[row.project._id]}
+                            >
+                              $ {Number(row.claimableRewards).toFixed(0)}
+                            </Button>
+                            {isCliaming[row.project._id] && <CircularProgress color="primary" size="16px" />}
                           </Stack>
                         )}
                         {column.id === 'action' && (
-                          <NextLink href={value} passHref legacyBehavior>
+                          <NextLink href={`/projects/${row.project._id}`} passHref legacyBehavior>
                             <Link>
-                              <Button>Polygonscan</Button>
+                              <Button variant="contained">Invest more</Button>
                             </Link>
                           </NextLink>
                         )}
-                        {column.id !== 'rewards' &&
-                          column.id !== 'projectName' &&
-                          column.id !== 'action' &&
-                          (column.format ? column.format(value) : value)}
+                        {/* {column.id === 'action' && (
+                          <NextLink href={`/projects/${row.projectId}`} passHref legacyBehavior>
+                            <Link>
+                              <IconButton size="medium">
+                                <EyeOutlined style={{ color: 'white' }} />
+                              </IconButton>
+                            </Link>
+                          </NextLink>
+                        )} */}
+                        {column.id === 'projectName' && (
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <img
+                              src={`${process.env.SHIPFINEX_BACKEND_URL}${row.project.projectImage}`}
+                              alt="ship"
+                              width={40}
+                              height={40}
+                              style={{ borderRadius: '100%' }}
+                            />
+                            <Typography>{row.project.projectName}</Typography>
+                          </Stack>
+                        )}
                       </TableCell>
                     );
                   })}

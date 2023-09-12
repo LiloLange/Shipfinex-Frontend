@@ -1,19 +1,47 @@
+import { useState } from 'react';
+
 // material-ui
 import { Box, Button, Card, CardContent, Slider, Stack, Typography } from '@mui/material';
+import { enqueueSnackbar } from 'notistack';
 
 // ==============================|| PREVIEW CARD ||============================== //
 
 type Props = {
+  projectId: string;
   projectName?: string;
   imoNumber?: number;
   fundRaising?: number;
   offering?: number;
-  requestAmount?: number;
-  handleApprove?: () => void;
-  handleReject?: () => void;
+  requested?: boolean;
 };
 
 const WithdrawalRequestCard = (props: Props) => {
+  const [isSubmitting, setSubmitting] = useState<boolean>(false);
+
+  const handleApprove = () => {
+    setSubmitting(true);
+    fetch(`/api/project/withdraw/submit?projectId=${props.projectId}&status=${true}`).then((res) => {
+      if (res.status === 200) {
+        enqueueSnackbar('Successfully submitted.', { anchorOrigin: { horizontal: 'right', vertical: 'top' }, variant: 'success' });
+      } else {
+        enqueueSnackbar('Submission failed.', { anchorOrigin: { horizontal: 'right', vertical: 'top' }, variant: 'error' });
+      }
+      setSubmitting(false);
+    });
+  };
+
+  const handleReject = () => {
+    setSubmitting(true);
+    fetch(`/api/project/withdraw/submit?projectId=${props.projectId}&status=${false}`).then((res) => {
+      if (res.status === 200) {
+        enqueueSnackbar('Successfully submitted.', { anchorOrigin: { horizontal: 'right', vertical: 'top' }, variant: 'success' });
+      } else {
+        enqueueSnackbar('Submission failed.', { anchorOrigin: { horizontal: 'right', vertical: 'top' }, variant: 'error' });
+      }
+      setSubmitting(false);
+    });
+  };
+
   return (
     <Card style={{ position: 'relative' }}>
       <CardContent>
@@ -31,25 +59,26 @@ const WithdrawalRequestCard = (props: Props) => {
           <Typography variant="body2" pl={1} color="text.secondary">
             Fund Raising Status
           </Typography>
-          <Box pr={4} pt={3} pl={1.5}>
+          <Box pt={3} px={1.5}>
             <Slider
               value={props.fundRaising}
+              valueLabelFormat={(value) => `$ ${value}`}
               max={props.offering}
               min={0}
               disabled
               valueLabelDisplay="on"
               marks={[
                 { value: 0, label: '0' },
-                { value: props.offering || 100, label: `$${props.offering || 10000}` }
+                { value: props.offering || 0, label: `$${props.offering || 0}` }
               ]}
             />
           </Box>
           <Stack direction="row" spacing={2}>
-            <Button color="success" fullWidth variant="contained" disabled={!props.requestAmount}>
-              Approve
-            </Button>
-            <Button color="error" fullWidth variant="contained" disabled={!props.requestAmount}>
+            <Button color="error" fullWidth variant="contained" disabled={!props.requested || isSubmitting} onClick={handleReject}>
               Reject
+            </Button>
+            <Button color="success" fullWidth variant="contained" disabled={!props.requested || isSubmitting} onClick={handleApprove}>
+              Approve
             </Button>
           </Stack>
         </Stack>

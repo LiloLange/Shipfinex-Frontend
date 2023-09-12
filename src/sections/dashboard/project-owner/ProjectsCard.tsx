@@ -4,10 +4,20 @@ import { Box, Card, Divider, Stack, Typography } from '@mui/material';
 // assets
 import { UserAddOutlined, FileDoneOutlined, FieldTimeOutlined, CloseCircleOutlined, FileProtectOutlined } from '@ant-design/icons';
 import * as antColors from '@ant-design/colors';
+import { useEffect, useState } from 'react';
 
 // ==============================|| PROJECTS CARD ||============================== //
 
 const ProjectsCard = () => {
+  const [data, setData] = useState<any>({});
+
+  useEffect(() => {
+    fetch('/api/project').then(async (res) => {
+      if (res.status === 200) {
+        setData(await res.json());
+      }
+    });
+  }, []);
   return (
     <Card
       style={{
@@ -22,7 +32,7 @@ const ProjectsCard = () => {
       <Stack direction="row" mb={1} justifyContent="space-between" alignItems="center">
         <Box color="white">
           <Typography variant="body2"># of Projects</Typography>
-          <Typography variant="h4">0</Typography>
+          <Typography variant="h4">{data.total || 0}</Typography>
         </Box>
         <FileProtectOutlined style={{ color: 'white', fontSize: 24 }} />
       </Stack>
@@ -34,7 +44,7 @@ const ProjectsCard = () => {
             <Typography>Active</Typography>
           </Stack>
           <Typography fontWeight="bold" color="blue">
-            0
+            {data.activeCount || 0}
           </Typography>
         </Stack>
         <Stack borderRadius={2} bgcolor={antColors.blue[0]} direction="row" justifyContent="space-between" px={2} py={1} color="grey">
@@ -43,7 +53,7 @@ const ProjectsCard = () => {
             <Typography>Approved</Typography>
           </Stack>
           <Typography fontWeight="bold" color="green">
-            0
+            {data.approvedCount || 0}
           </Typography>
         </Stack>
         <Stack borderRadius={2} bgcolor={antColors.blue[0]} direction="row" justifyContent="space-between" px={2} py={1} color="grey">
@@ -52,7 +62,7 @@ const ProjectsCard = () => {
             <Typography>Pending</Typography>
           </Stack>
           <Typography fontWeight="bold" color="purple">
-            0
+            {data.pendingCount || 0}
           </Typography>
         </Stack>
         <Stack borderRadius={2} bgcolor={antColors.blue[0]} direction="row" justifyContent="space-between" px={2} py={1} color="grey">
@@ -61,7 +71,7 @@ const ProjectsCard = () => {
             <Typography>Rejected</Typography>
           </Stack>
           <Typography fontWeight="bold" color="red">
-            0
+            {data.rejectCount || 0}
           </Typography>
         </Stack>
       </Stack>

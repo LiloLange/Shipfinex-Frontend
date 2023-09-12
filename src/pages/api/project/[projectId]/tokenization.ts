@@ -1,19 +1,17 @@
-// This is an example of to protect an API route
-import { getServerSession } from 'next-auth/next';
+import { getSession } from 'next-auth/react';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { UserRole } from 'types/auth';
-import axios from 'axios';
-import { authOptions } from '../../auth/[...nextauth]';
+import axios from 'utils/axios';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
+  const session = await await getSession({ req });
 
   if (session && session.token.accessToken && session.token.role === UserRole.ADMIN) {
     const { projectId } = req.query;
 
     axios.defaults.headers.common = { Authorization: `bearer ${session.token.accessToken as string}` };
 
-    const response = await axios.post(`${process.env.SHIPFINEX_BACKEND_URL}/project/${projectId}/tokenization`, req.body).catch((err) => {
+    const response = await axios.post(`/api/v1/project/${projectId}/tokenization`, req.body).catch((err) => {
       res.status(err.response.status).json({ error: err });
     });
     if (response) {

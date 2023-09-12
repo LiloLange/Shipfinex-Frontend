@@ -28,7 +28,7 @@ const TransferCard = (props: BalanceData) => {
 
   return (
     <MainCard style={{ backgroundColor: antColors.blue[5], color: 'white', height: '100%' }}>
-      <Stack spacing={4} justifyContent="end" mt={6}>
+      <Stack spacing={4} justifyContent="end" mt={7}>
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"

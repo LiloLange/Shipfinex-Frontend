@@ -1,5 +1,4 @@
 import { ReactElement, useEffect, useState } from 'react';
-import { signOut } from 'next-auth/react';
 
 // material-ui
 import { Box, Stack, InputLabel, TextField, Grid, Card, CardContent, Typography, Chip, CardMedia, CircularProgress } from '@mui/material';
@@ -59,14 +58,7 @@ const KYCDetail = () => {
     const fetchKYCById = () => {
       fetch(`/api/kyc/${router.query.kycId}`)
         .then(async (res) => {
-          if (res.status === 401) {
-            signOut({ redirect: false });
-
-            router.push({
-              pathname: '/signin',
-              query: {}
-            });
-          } else {
+          if (res.status === 200) {
             const applicantData = await res.json();
             console.log(applicantData['applicant']['info']['idDocs'][0]);
             console.log(applicantData['applicantVeriff']['IDENTITY']['imageReviewResults']);

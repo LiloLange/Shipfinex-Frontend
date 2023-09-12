@@ -5,7 +5,6 @@ import { Box, Grid } from '@mui/material';
 
 // project import
 import AuthCard from './AuthCard';
-import AuthFooter from 'components/cards/AuthFooter';
 import Logo from 'components/logo';
 
 interface Props {
@@ -35,15 +34,12 @@ const AuthWrapper = ({ children }: Props) => (
           container
           justifyContent="center"
           alignItems="center"
-          sx={{ minHeight: { xs: 'calc(100vh - 210px)', sm: 'calc(100vh - 134px)', md: 'calc(100vh - 112px)' } }}
+          sx={{ minHeight: { xs: 'calc(100vh - 210px)', sm: 'calc(100vh - 134px)', md: 'calc(100vh - 60px)' } }}
         >
           <Grid item>
             <AuthCard>{children}</AuthCard>
           </Grid>
         </Grid>
-      </Grid>
-      <Grid item xs={12} sx={{ m: 3, mt: 1 }}>
-        <AuthFooter />
       </Grid>
     </Grid>
   </Box>

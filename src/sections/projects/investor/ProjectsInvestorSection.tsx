@@ -2,8 +2,7 @@
 import { Grid } from '@mui/material';
 
 // project imports
-import InvestmentSection from './InvestmentsSection';
-import TrnedingProjects from './TrendingProjects';
+import TrendingProjects from './TrendingProjects';
 
 // ==============================|| INVESTOR - PROJECTS ||============================== //
 
@@ -12,13 +11,7 @@ const ProjectsInvestorSection = () => {
     <>
       <Grid container spacing={5}>
         <Grid item xs={12}>
-          <InvestmentSection />
-        </Grid>
-        <Grid item xs={12}>
-          <TrnedingProjects />
-        </Grid>
-        <Grid item xs={12}>
-          <TrnedingProjects />
+          <TrendingProjects />
         </Grid>
       </Grid>
     </>

@@ -1,17 +1,13 @@
-// This is an example of to protect an API route
-import { getServerSession } from 'next-auth/next';
+import { getSession } from 'next-auth/react';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
-import { authOptions } from '../auth/[...nextauth]';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
+  const session = await await getSession({ req });
   const stripe = new Stripe(process.env.STRIPE_PRIVATE_KEY || '', { apiVersion: '2023-08-16' });
 
   if (session && session.token.accessToken) {
     const { amount } = req.query;
-
-    console.log(session.token);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Number(amount) * 100,

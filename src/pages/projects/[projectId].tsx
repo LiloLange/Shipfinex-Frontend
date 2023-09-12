@@ -10,6 +10,7 @@ import Page from 'components/Page';
 import DocumentsForm from 'sections/projects/project-owner/detailForms/DocumentsForm';
 import ShipDetailForm from 'sections/projects/project-owner/detailForms/ShipDetailForm';
 import TokenizationForm from 'sections/projects/project-owner/detailForms/TokenizationForm';
+import ProjectDetailForm from 'sections/projects/investor/ProjectDetail';
 
 // third-party
 import { useSession } from 'next-auth/react';
@@ -55,8 +56,10 @@ const ProjectDetail = () => {
   useEffect(() => {
     fetch(`/api/project/${router.query.projectId}`)
       .then(async (res) => {
-        const data = await res.json();
-        console.log(data);
+        let data = await res.json();
+
+        data = data._doc ? data._doc : data;
+
         setShipDetail({
           projectImage: data.projectImage,
           projectName: data.projectName,
@@ -68,6 +71,7 @@ const ProjectDetail = () => {
           estimatedEarning: data.estimatedEarning,
           id: data._id
         });
+        setDocuments(data.documents);
         setTokenization({ ...data.tokenization, tokenized: data.tokenized });
         setLoading(false);
       })
@@ -84,16 +88,20 @@ const ProjectDetail = () => {
           style={{ maxWidth: session?.token.role === UserRole.PROJECT_OWNER ? 768 : 'auto', marginLeft: 'auto', marginRight: 'auto' }}
         >
           <Box maxWidth={768}>
-            <Tabs value={tab} onChange={handleTabChange} aria-label="project detail tabs">
-              <Tab label="Ship Detail" value={0} />
-              <Tab label="Documents" value={1} disabled={JSON.stringify(shipDetail) === JSON.stringify({})} />
-              <Tab
-                label="Tokenization"
-                value={2}
-                disabled={router.query.projectId === 'add' && JSON.stringify(documents) === JSON.stringify({})}
-              />
-            </Tabs>
-            <Divider style={{ marginBottom: 24 }} />
+            {session?.token.role !== UserRole.INVESTOR && (
+              <>
+                <Tabs value={tab} onChange={handleTabChange} aria-label="project detail tabs">
+                  <Tab label="Ship Detail" value={0} />
+                  <Tab label="Documents" value={1} disabled={JSON.stringify(shipDetail) === JSON.stringify({})} />
+                  <Tab
+                    label="Tokenization"
+                    value={2}
+                    disabled={router.query.projectId === 'add' && JSON.stringify(documents) === JSON.stringify({})}
+                  />
+                </Tabs>
+                <Divider style={{ marginBottom: 24 }} />
+              </>
+            )}
             {session?.token.role === UserRole.PROJECT_OWNER && (
               <>
                 {tab === 0 && <ShipDetailForm handleNext={handleNextOfShipDetail} setShipDetail={setShipDetail} shipDetail={shipDetail} />}
@@ -111,6 +119,7 @@ const ProjectDetail = () => {
           </Box>
         </MainCard>
       )}
+      {!isLoading && session?.token.role === UserRole.INVESTOR && <ProjectDetailForm />}
     </Page>
   );
 };

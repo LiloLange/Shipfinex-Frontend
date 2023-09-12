@@ -32,17 +32,19 @@ const ProjectDetail = () => {
   const router = useRouter();
   const [isLoading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<any>();
+  const [projectDetail, setProjectDetail] = useState<any>();
+  const [others, setOthers] = useState<any>({});
 
   const handleTabChange = (ev: SyntheticEvent, newValue: number) => {
     setTab(newValue);
   };
 
-  const handleSubmit = (newStatus: number, comments: string) => {};
-
   useEffect(() => {
     fetch(`/api/project/${router.query.projectId}`)
       .then(async (res) => {
-        const data = await res.json();
+        const { _doc: data, ...others } = await res.json();
+        setOthers(others);
+        setProjectDetail(data);
         setShipDetail({
           projectImage: data.projectImage,
           projectName: data.projectName,
@@ -69,7 +71,7 @@ const ProjectDetail = () => {
       {isLoading && <CircularProgress color="primary" />}
       {!isLoading && !error && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={6}>
             <MainCard
               style={{ maxWidth: session?.token.role === UserRole.PROJECT_OWNER ? 768 : 'auto', marginLeft: 'auto', marginRight: 'auto' }}
             >
@@ -84,20 +86,33 @@ const ProjectDetail = () => {
               {tab == 2 && <Tokenization tokenization={tokenization} />}
             </MainCard>
           </Grid>
+          <Grid item xs={12} md={2} />
           <Grid item xs={12} md={4}>
             {tab === 0 && (
               <>
                 <Grid container spacing={3}>
                   <Grid item xs={6} md={12}>
-                    <PreviewCard projectName={shipDetail.projectName} />
+                    <PreviewCard
+                      projectName={shipDetail.projectName}
+                      estimatedEarning={projectDetail.estimatedEarning}
+                      matPrice={1}
+                      valuation={tokenization.assetValue}
+                    />
                   </Grid>
                   <Grid item xs={6} md={12}>
-                    <WithdrawalRequestCard projectName={shipDetail.projectName} imoNumber={shipDetail.imoNumber} />
+                    <WithdrawalRequestCard
+                      requested={others.withdrawalRequest === false}
+                      fundRaising={others.investments}
+                      projectName={shipDetail.projectName}
+                      imoNumber={shipDetail.imoNumber}
+                      projectId={projectDetail._id}
+                      offering={tokenization.tonnage * 10 * tokenization.offeringPercentage}
+                    />
                   </Grid>
                 </Grid>
               </>
             )}
-            {tab === 1 && <SubmitCard handleSubmit={handleSubmit} />}
+            {tab === 1 && <SubmitCard data={projectDetail} />}
           </Grid>
         </Grid>
       )}

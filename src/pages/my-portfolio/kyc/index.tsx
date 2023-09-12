@@ -1,7 +1,7 @@
 import { useState, ReactElement, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import SumsubWebSdk from '@sumsub/websdk-react';
-import { signOut } from 'next-auth/react';
+
 import axios from 'utils/axios';
 import Image from 'next/image';
 // material-ui
@@ -27,22 +27,12 @@ const KYC = () => {
     const fetchAccessToken = async () => {
       try {
         const res = await axios.get(`/kyc/websdk`);
-        if (res.status === 401) {
-          signOut({ redirect: false });
-          router.push({
-            pathname: '/signin',
-            query: {}
-          });
-        } else {
+        if (res.status === 200) {
           // console.log(res.data.token);
           setAccessToken(res.data.token);
         }
       } catch (error) {
-        signOut({ redirect: false });
-        router.push({
-          pathname: '/signin',
-          query: {}
-        });
+        console.log(error);
       }
     };
     fetchAccessToken();

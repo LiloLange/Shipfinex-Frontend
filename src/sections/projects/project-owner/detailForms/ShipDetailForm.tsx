@@ -22,7 +22,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 
 // third-party
 import { useFormik } from 'formik';
@@ -34,7 +34,8 @@ import AnimateButton from 'components/@extended/AnimateButton';
 // assets
 import { CloudUploadOutlined, EyeOutlined } from '@ant-design/icons';
 import * as antColors from '@ant-design/colors';
-import axios from 'axios';
+import axios from 'utils/axios';
+import { enqueueSnackbar } from 'notistack';
 
 const validationSchema = yup.object({
   projectImage: yup.mixed().required('Project Image is required'),
@@ -44,7 +45,7 @@ const validationSchema = yup.object({
     .string()
     .matches(/^\d{7}$/, { message: 'Invalid IMO number' })
     .required('IMO number is required'),
-  vesselType: yup.number().required('Vessel Type is required.'),
+  vesselType: yup.string().required('Vessel Type is required.'),
   builtYear: yup.date().required('Built year is required.'),
   flag: yup.string().required('Flag is required'),
   estimatedEarning: yup.number().min(0, 'Invalid Value').max(100, 'Invalid Value').required('Estimated Earning is required.')
@@ -85,6 +86,7 @@ export default function ShipDetailForm({ shipDetail, setShipDetail, handleNext }
   const { data: session } = useSession();
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewImage, setReviewImage] = useState<any>();
+  const [isSubmitting, setSubmitting] = useState<boolean>(false);
 
   const formik = useFormik({
     initialValues: {
@@ -99,8 +101,7 @@ export default function ShipDetailForm({ shipDetail, setShipDetail, handleNext }
     },
     validationSchema,
     onSubmit: (values) => {
-      console.log('success');
-      console.log(values.projectImage);
+      setSubmitting(true);
       const shipDetail: ShipDetail = {
         projectImage: values.projectImage,
         projectName: values.projectName,
@@ -124,19 +125,26 @@ export default function ShipDetailForm({ shipDetail, setShipDetail, handleNext }
 
       axios.defaults.headers.common = { Authorization: `bearer ${session?.token.accessToken as string}` };
       axios
-        .post(`${process.env.SHIPFINEX_BACKEND_URL}/project/register`, formData)
+        .post(`/api/v1/project/register`, formData)
         .then(async (res) => {
-          if (res.status === 401) {
-            signOut({ redirect: false });
+          if (res.status === 201) {
+            setSubmitting(false);
 
-            router.push({
-              pathname: '/signin',
-              query: {}
-            });
-          } else {
             shipDetail.id = res.data._id;
             setShipDetail(shipDetail);
             handleNext();
+
+            enqueueSnackbar('Project registered successfully.', {
+              variant: 'success',
+              anchorOrigin: { vertical: 'top', horizontal: 'right' }
+            });
+          } else {
+            enqueueSnackbar('Project registeration failed.', {
+              variant: 'success',
+              anchorOrigin: { vertical: 'top', horizontal: 'right' }
+            });
+            setSubmitting(false);
+            console.log(res);
           }
         })
         .catch((err) => {
@@ -155,7 +163,7 @@ export default function ShipDetailForm({ shipDetail, setShipDetail, handleNext }
       };
       reader.readAsDataURL(formik.values.projectImage);
     } else {
-      setReviewImage(`https://shipfinex.onrender.com${formik.values.projectImage}`);
+      setReviewImage(`${process.env.SHIPFINEX_BACKEND_URL}${formik.values.projectImage}`);
     }
   }, [formik.values.projectImage]);
 
@@ -312,6 +320,7 @@ export default function ShipDetailForm({ shipDetail, setShipDetail, handleNext }
                 <DatePicker
                   views={['year']}
                   value={formik.values.builtYear}
+                  defaultValue={new Date()}
                   onChange={(value, context) => {
                     if (value) {
                       formik.setFieldValue('builtYear', value);
@@ -369,7 +378,7 @@ export default function ShipDetailForm({ shipDetail, setShipDetail, handleNext }
             <Grid item xs={12}>
               <Stack direction="row" justifyContent="end">
                 <AnimateButton>
-                  <Button variant="contained" type="submit" sx={{ my: 3, ml: 1 }}>
+                  <Button variant="contained" type="submit" sx={{ my: 3, ml: 1 }} disabled={isSubmitting}>
                     Next
                   </Button>
                 </AnimateButton>

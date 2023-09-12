@@ -21,6 +21,9 @@ axiosServices.interceptors.request.use(
 axiosServices.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.response.status === 401) {
+      // NextResponse.redirect(`http://localhost:3000/signin`);
+    }
     return Promise.reject(error);
   }
 );

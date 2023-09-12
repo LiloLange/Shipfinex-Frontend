@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 // next
 import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
+// import { useRouter } from 'next/router';
+// import { useSession } from 'next-auth/react';
 
 // material-ui
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -62,26 +62,26 @@ const columns: ColumnProps[] = [
 
 export default function TransactionHistory() {
   const headRowRef = useRef<HTMLDivElement>(null);
-  const [totalRows, setTotalRows] = useState<number>(0);
+  const [totalRows /*, setTotalRows*/] = useState<number>(0);
   const [stoOpen, setStoOpen] = useState<boolean>(false);
   const [endDate, setEndDate] = useState<Date>();
   const [startDate, setStartDate] = useState<Date>();
   const { currentPage, jump } = usePagination(0, 25);
-  const [rows, setRows] = useState<any[]>([]);
-  const router = useRouter();
-  const { data: session } = useSession();
+  const [rows /*, setRows*/] = useState<any[]>([]);
+  // const router = useRouter();
+  // const { data: session } = useSession();
 
-  useEffect(() => {
-    fetch('/api/project')
-      .then(async (res) => {
-        const { total: totalRows, data: _rows } = await res.json();
-        if (totalRows) {
-          setTotalRows(totalRows);
-          setRows(_rows);
-        }
-      })
-      .catch((error) => console.log(error));
-  }, [router, session]);
+  // useEffect(() => {
+  //   fetch('/api/project')
+  //     .then(async (res) => {
+  //       const { total: totalRows, data: _rows } = await res.json();
+  //       if (totalRows) {
+  //         setTotalRows(totalRows);
+  //         setRows(_rows);
+  //       }
+  //     })
+  //     .catch((error) => console.log(error));
+  // }, [router, session]);
 
   const handleStoLaunchClick = (id: string) => {
     setStoOpen(true);
@@ -168,7 +168,7 @@ export default function TransactionHistory() {
                         {column.id === 'projectName' && (
                           <Typography>
                             {value}{' '}
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" color="text.secondary" component="span">
                               {row.tokenization['tokenName']}
                             </Typography>
                           </Typography>

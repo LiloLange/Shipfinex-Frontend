@@ -1,7 +1,7 @@
-import { ReactElement, SyntheticEvent, useState } from 'react';
+import { ReactElement } from 'react';
 
 // material-ui
-import { Grid, IconButton, Paper, Stack, Tab, Tabs, Theme, Typography, useMediaQuery } from '@mui/material';
+import { Box, Grid, Stack, Theme, Typography, useMediaQuery } from '@mui/material';
 
 // third-party
 import { useSession } from 'next-auth/react';
@@ -19,19 +19,11 @@ import ProjectOwnerTransactionHistory from 'sections/my-wallet/project-owner/Tra
 // types
 import { UserRole } from 'types/auth';
 
-// assets
-import { DownloadOutlined } from '@ant-design/icons';
-
 // ==============================|| My Wallet ||============================== //
 
 const MyWallet = () => {
   const { data: session } = useSession();
-  const [tab, setTab] = useState<number>(0);
   const matchDownSM = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'));
-
-  const handleTabChange = (ev: SyntheticEvent, newValue: number) => {
-    setTab(newValue);
-  };
 
   return (
     <Page title="My Wallet">
@@ -52,34 +44,22 @@ const MyWallet = () => {
             spacing={2}
           >
             <Typography variant="h4">Transaction History</Typography>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Paper>
-                <Tabs value={tab} onChange={handleTabChange}>
-                  <Tab label="All" value={0} />
-                  <Tab label="MRN" value={1} />
-                  <Tab label="MAT" value={2} />
-                </Tabs>
-              </Paper>
-              <Paper>
-                <IconButton>
-                  <DownloadOutlined style={{ color: 'blue' }} />
-                </IconButton>
-              </Paper>
-            </Stack>
           </Stack>
           <InvestorTransactionHistory />
         </Stack>
       )}
       {session?.token.role === UserRole.PROJECT_OWNER && (
         <Stack spacing={3}>
-          <Grid container justifyContent="stretch" spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <ProjectOwnerBalanceCard walletAddress={session.token.walletAddress} />
+          <Box>
+            <Grid container justifyContent="stretch" spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <ProjectOwnerBalanceCard />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <ProjectOwnerProjectBalanceCard />
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <ProjectOwnerProjectBalanceCard />
-            </Grid>
-          </Grid>
+          </Box>
           <Typography variant="h4">Transaction History</Typography>
           <ProjectOwnerTransactionHistory />
         </Stack>

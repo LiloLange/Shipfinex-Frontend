@@ -13,8 +13,8 @@ const InvestmentsCard = () => {
   useEffect(() => {
     fetch('/api/investment').then(async (res) => {
       if (res.status === 200) {
-        const { totalAmount } = await res.json();
-        setCurrentValue(totalAmount);
+        const { total } = await res.json();
+        setCurrentValue(total.investment);
       }
     });
   }, []);

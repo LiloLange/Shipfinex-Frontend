@@ -1,19 +1,15 @@
-// This is an example of to protect an API route
-import { getServerSession } from 'next-auth/next';
+import { getSession } from 'next-auth/react';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'utils/axios';
 
-import { authOptions } from '../auth/[...nextauth]';
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
-
-  console.log(session);
+  const session = await await getSession({ req });
 
   if (session && session.token.accessToken) {
+    const { allowance } = req.query;
     axios.defaults.headers.common = { Authorization: `bearer ${session.token.accessToken as string}` };
 
-    const response = await axios.get('/project/all').catch((err) => {
+    const response = await axios.get(`/api/v1/project/all${allowance ? `?allowance=${allowance}` : ''}`).catch((err) => {
       if (err && err.response) {
         res.status(err.response.status).json(err);
       }

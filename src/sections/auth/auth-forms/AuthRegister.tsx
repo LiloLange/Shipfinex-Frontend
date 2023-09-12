@@ -97,11 +97,16 @@ const AuthRegister = ({ providers, csrfToken }: any) => {
               referralCode: values.referralCode
             }).then((res: any) => {
               if (res?.error) {
-                const mappedErrors: any[] = JSON.parse(res.error);
-                const errors: any = {};
-                mappedErrors.forEach((error) => (errors[error.path[0]] = error.message));
-                setErrors({ ...errors });
-                setSubmitting(false);
+                try {
+                  const mappedErrors: any[] = JSON.parse(res.error);
+                  const errors: any = {};
+                  mappedErrors.forEach((error) => (errors[error.path[0]] = error.message));
+                  setErrors({ ...errors });
+                  setSubmitting(false);
+                } catch (e) {
+                  setErrors({ submit: res.error });
+                  setSubmitting(false);
+                }
               } else {
                 setSubmitting(false);
                 router.push('/verify-email');

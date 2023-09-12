@@ -1,6 +1,5 @@
 import { ChangeEvent, useState, ReactElement, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { signOut } from 'next-auth/react';
 
 // next
 import NextLink from 'next/link';
@@ -84,14 +83,7 @@ const ProjectOwners = () => {
     const fetchInvestors = () => {
       fetch(`/api/user/prowner?page=${currentPage}`)
         .then(async (res) => {
-          if (res.status === 401) {
-            signOut({ redirect: false });
-
-            router.push({
-              pathname: '/signin',
-              query: {}
-            });
-          } else {
+          if (res.status === 200) {
             const { total: totalRows, data: _rows } = await res.json();
             if (totalRows) {
               setRows(_rows);

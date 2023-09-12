@@ -44,15 +44,15 @@ interface ColumnProps {
 
 const columns: ColumnProps[] = [
   { id: 'id', label: 'S.No.', minWidth: 5, align: 'left' },
-  { id: 'projectName', label: 'Project Name', minWidth: 10, align: 'center' },
-  { id: 'projectOwner', label: 'Project Owner', minWidth: 10, align: 'center' },
-  { id: 'email', label: 'Email', minWidth: 10, align: 'center' },
-  { id: 'vesselType', label: 'Project Category', minWidth: 10, align: 'center' },
-  { id: 'tokenization', label: 'Tokenization', minWidth: 10, align: 'center' },
-  { id: 'status', label: 'Status', minWidth: 5, align: 'center' },
-  { id: 'createdAt', label: 'Created At', minWidth: 10, align: 'center' },
-  { id: 'action', label: 'Action', minWidth: 15, align: 'center' },
-  { id: 'withdrawalRequest', label: 'Withdrawal Request', minWidth: 15, align: 'right' }
+  { id: 'projectName', label: 'Project Name', minWidth: 10, align: 'left' },
+  { id: 'projectOwner', label: 'Project Owner', minWidth: 10, align: 'left' },
+  { id: 'email', label: 'Email', minWidth: 10, align: 'left' },
+  { id: 'vesselType', label: 'Project Category', minWidth: 10, align: 'left' },
+  { id: 'tokenization', label: 'Tokenization', minWidth: 10, align: 'left' },
+  { id: 'allowance', label: 'Status', minWidth: 5, align: 'left' },
+  { id: 'createdAt', label: 'Created At', minWidth: 10, align: 'left' },
+  { id: 'action', label: 'Action', minWidth: 5, align: 'left' },
+  { id: 'withdrawalRequest', label: 'Withdrawal Request', minWidth: 20, align: 'left' }
 ];
 
 // ==============================|| PORTFOLIIO TRANSACTIONS TABLE ||============================== //
@@ -71,6 +71,7 @@ const ProjectsAdminSection = () => {
       .then(async (res) => {
         const { total: totalRows, data: _rows } = await res.json();
         if (totalRows) {
+          console.log(_rows);
           setTotalRows(totalRows);
           setRows(_rows);
         }
@@ -137,28 +138,35 @@ const ProjectsAdminSection = () => {
               rows.map((row: KeyedObject, _index) => (
                 <TableRow sx={{ py: 3 }} hover role="checkbox" tabIndex={-1} key={`${row.projectName}-${_index}`}>
                   {columns.map((column) => {
-                    const value = row[column.id];
+                    const value = row._doc ? row._doc[column.id] : row[column.id];
                     return (
                       <TableCell key={column.id} align={column.align}>
                         {column.id === 'id' && currentPage * 25 + _index - 24}
-                        {column.id === 'email' && <Link href={`mailto:${row.projectOwner.email}`}>{row.projectOwner.email}</Link>}
-                        {column.id === 'projectOwner' && `${row.projectOwner.firstName} ${row.projectOwner.lastName}`}
+                        {column.id === 'email' && (
+                          <Link href={`mailto:${row._doc ? row._doc.projectOwner.email : row.projectOwner.email}`}>
+                            {row._doc ? row._doc.projectOwner.email : row.projectOwner.email}
+                          </Link>
+                        )}
+                        {column.id === 'projectOwner' &&
+                          `${row._doc ? row._doc.projectOwner.firstName : row.projectOwner.firstName} ${
+                            row._doc ? row._doc.projectOwner.lastName : row.projectOwner.lastName
+                          }`}
                         {column.id === 'tokenization' && (
                           <Typography color={!value ? theme.palette.error.main : theme.palette.success.main}>
                             {value ? 'Tokenized' : 'Not Tokenized'}
                           </Typography>
                         )}
-                        {column.id === 'status' && (
+                        {column.id === 'allowance' && (
                           <Typography
                             color={
-                              value === 0 ? theme.palette.warning.main : value == 1 ? theme.palette.error.main : theme.palette.success.main
+                              value === 0 ? theme.palette.warning.main : value == 2 ? theme.palette.error.main : theme.palette.success.main
                             }
                           >
-                            {value === 0 ? 'Pending' : value == 1 ? 'Rejected' : 'Approved'}
+                            {value === 0 ? 'Pending' : value == 2 ? 'Rejected' : 'Approved'}
                           </Typography>
                         )}
                         {column.id === 'action' && (
-                          <NextLink href={`/admin/projects/${row._id}`} passHref legacyBehavior>
+                          <NextLink href={`/admin/projects/${row._doc ? row._doc._id : row._id}`} passHref legacyBehavior>
                             <Link>
                               <IconButton size="medium">
                                 <EyeOutlined style={{ color: 'white' }} />
@@ -166,12 +174,20 @@ const ProjectsAdminSection = () => {
                             </Link>
                           </NextLink>
                         )}
+                        {column.id === 'createdAt' && <Typography>{new Date(value).toLocaleDateString()}</Typography>}
+                        {column.id === 'withdrawalRequest' && row._doc && (
+                          <>
+                            {row.withdrawalRequest === true && <Typography color={theme.palette.error.main}>Failed</Typography>}
+                            {row.withdrawalRequest === false && <Typography color={theme.palette.warning.main}>Pending</Typography>}
+                          </>
+                        )}
                         {column.id !== 'projectOwner' &&
                           column.id !== 'email' &&
-                          column.id !== 'status' &&
+                          column.id !== 'allowance' &&
                           column.id !== 'action' &&
                           column.id !== 'tokenization' &&
                           column.id !== 'withdrawalRequest' &&
+                          column.id !== 'createdAt' &&
                           value}
                       </TableCell>
                     );

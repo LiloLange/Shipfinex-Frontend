@@ -41,15 +41,15 @@ const PreviewCard = (props: Props) => {
               Est. IRR
             </Typography>
             <Typography variant="body2" fontWeight={700}>
-              {props.estimatedEarning}%
+              {props.estimatedEarning} %
             </Typography>
           </Stack>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Typography variant="body2" color="text.secondary">
-              Token MAT Price
+              Token price
             </Typography>
             <Typography variant="body2" fontWeight={700}>
-              {props.matPrice?.toLocaleString()} MRN
+              $ {props.matPrice?.toLocaleString()}
             </Typography>
           </Stack>
         </Stack>

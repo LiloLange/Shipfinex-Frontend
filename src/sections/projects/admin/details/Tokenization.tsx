@@ -196,10 +196,10 @@ export default function TokenizationForm({ tokenization }: TokenizationFormProps
             >
               <MenuItem>Select Minimum Investment</MenuItem>
               <MenuItem value={10}>$ 10</MenuItem>
+              <MenuItem value={50}>$ 50</MenuItem>
               <MenuItem value={100}>$ 100</MenuItem>
               <MenuItem value={500}>$ 500</MenuItem>
               <MenuItem value={1000}>$ 1000</MenuItem>
-              <MenuItem value={5000}>$ 5000</MenuItem>
             </Select>
           </Stack>
         </Grid>

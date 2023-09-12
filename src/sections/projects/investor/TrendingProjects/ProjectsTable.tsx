@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 
 // next
 import NextLink from 'next/link';
-import Image from 'next/image';
 
 // material-ui
 import {
@@ -42,22 +41,30 @@ const columns: ColumnProps[] = [
   { id: 'projectName', label: 'Project Name', minWidth: 17, align: 'left' },
   { id: 'numberOfTokens', label: '# of Tokens', minWidth: 16, align: 'left' },
   { id: 'currentValue', label: 'Current value', minWidth: 16, align: 'left' },
-  { id: 'expectedEarning', label: 'Expected earning', minWidth: 17, align: 'left' },
-  { id: 'minInvestment', label: 'Min investment', minWidth: 17, align: 'left' },
+  { id: 'estimatedEarning', label: 'Expected earning', minWidth: 17, align: 'left' },
+  { id: 'minimumInvestment', label: 'Min investment', minWidth: 17, align: 'left' },
   { id: 'action', label: '', minWidth: 17, align: 'left' }
 ];
-
-const rows: any[] = [{}];
 
 // ==============================|| PROJECTS TABLE ||============================== //
 
 export default function ProjectsTable() {
   const headRowRef = useRef<HTMLDivElement>(null);
   const [totalRows, setTotalRows] = useState<number>(0);
+  const [rows, setRows] = useState<any[]>([]);
   const { currentPage, jump } = usePagination(100, 25);
 
   useEffect(() => {
-    setTotalRows(100);
+    fetch('/api/project?allowance=1')
+      .then(async (res) => {
+        const { total: totalRows, data: _rows } = await res.json();
+        if (totalRows) {
+          setTotalRows(totalRows);
+          console.log(_rows);
+          setRows(_rows);
+        }
+      })
+      .catch((error) => console.log(error));
   }, []);
 
   return (
@@ -85,21 +92,27 @@ export default function ProjectsTable() {
               {rows.map((row: KeyedObject, _index) => (
                 <TableRow sx={{ py: 3 }} hover role="checkbox" tabIndex={-1} key={`trending-projects-table-row-${_index}`}>
                   {columns.map((column, index) => {
-                    const value = row[column.id];
+                    const value = row._doc[column.id];
                     return (
                       <TableCell key={`trending-projects-table-${index}`} align={column.align}>
-                        {column.id === 'expectedEarning' && `${value}%`}
+                        {column.id === 'estimatedEarning' && `${value} %`}
                         {column.id === 'projectName' && (
-                          <Stack direction="row" spacing={1}>
-                            <Image src="" alt="" />
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <img
+                              src={`${process.env.SHIPFINEX_BACKEND_URL}${row._doc.projectImage}`}
+                              alt="ship"
+                              width={32}
+                              height={32}
+                              style={{ borderRadius: '100%' }}
+                            />
                             <Typography>{value}</Typography>
                           </Stack>
                         )}
-                        {column.id === 'numberOfTokens' && `${Number(value).toLocaleString()}MT`}
-                        {column.id === 'currentValue' && `$${Number(value).toLocaleString()}`}
-                        {column.id === 'minInvestment' && `${Number(value).toLocaleString()} $USD`}
+                        {column.id === 'numberOfTokens' && `${row._doc.tokenization.tonnage * 1000}`}
+                        {column.id === 'currentValue' && `$ ${row._doc.tokenization.assetValue}`}
+                        {column.id === 'minimumInvestment' && `$ ${row._doc.tokenization.minimumInvestment}`}
                         {column.id === 'action' && (
-                          <NextLink href={value || '/'} passHref legacyBehavior>
+                          <NextLink href={`/projects/${row._doc._id}`} passHref legacyBehavior>
                             <Link>
                               <Button variant="contained">Buy now</Button>
                             </Link>

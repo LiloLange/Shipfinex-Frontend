@@ -62,7 +62,9 @@ const BalanceCard = (props: BalanceData) => {
             style={{ backgroundColor: '#ffffff20', height: 'max-content', borderRadius: 16 }}
             onClick={handleCopyClipboard}
           >
-            <Typography mr={1}>{props.walletAddress}</Typography>
+            <Typography mr={1} noWrap width="100%" overflow="hidden">
+              {props.walletAddress}
+            </Typography>
             <CopyOutlined />
           </Button>
         </Stack>

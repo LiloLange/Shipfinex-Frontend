@@ -8,7 +8,7 @@ import MRN_ABI from './MRN.json';
 import { useCallback, useEffect, useState } from 'react';
 
 const web3 = new Web3('https://eth-goerli.g.alchemy.com/v2/KqDagOiXKFQ8T_QzPNpKBk1Yn-3Zgtgl');
-const mrnContract = new web3.eth.Contract(MRN_ABI as any[], '0x1DCe37CE348DEB72e7E800A289010770b62794D9');
+const musdContract = new web3.eth.Contract(MRN_ABI as any[], '0xA3F4Ee29BDcA287e6DEe9bf0C8F38154f8695B6f');
 
 export const useCurrentBalance = () => {
   const { data: session } = useSession();
@@ -16,9 +16,9 @@ export const useCurrentBalance = () => {
   const [isLoading, setLoading] = useState<boolean>(true);
 
   const refresh = useCallback(() => {
-    if (session && web3 && mrnContract) {
+    if (session && web3 && musdContract) {
       setLoading(true);
-      mrnContract.methods
+      musdContract.methods
         .balanceOf(session.token.walletAddress)
         .call({ from: web3.utils.toChecksumAddress('0x000000000000000000000000000000000000abcd') })
         .then((res: string) => {

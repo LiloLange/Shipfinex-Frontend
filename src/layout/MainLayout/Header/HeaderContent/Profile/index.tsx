@@ -42,8 +42,8 @@ const Profile = () => {
   const user = useUser();
   const router = useRouter();
 
-  const handleLogout = () => {
-    signOut({ redirect: false });
+  const handleLogout = async () => {
+    await signOut({ redirect: true });
 
     router.push({
       pathname: '/signin',

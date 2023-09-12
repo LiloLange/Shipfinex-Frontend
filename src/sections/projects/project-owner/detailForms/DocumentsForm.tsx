@@ -1,8 +1,10 @@
+import { useState } from 'react';
+
 // next
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import axios from 'utils/axios';
 import { useSession } from 'next-auth/react';
-import { signOut } from 'next-auth/react';
+
 // material-ui
 import { Button, FormHelperText, Grid, IconButton, InputLabel, Stack, Typography } from '@mui/material';
 
@@ -13,8 +15,9 @@ import * as yup from 'yup';
 // project imports
 import AnimateButton from 'components/@extended/AnimateButton';
 // assets
-import { CloudUploadOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { CloudUploadOutlined, CloseCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import * as antColors from '@ant-design/colors';
+import { enqueueSnackbar } from 'notistack';
 
 const validationSchema = yup.object({
   technicalReport: yup.mixed().required('Technical Report is required'),
@@ -32,50 +35,72 @@ type BootstrapFormItemProps = {
 };
 
 const BootstrapFormItem = ({ label, index, formik }: BootstrapFormItemProps) => {
+  const { query } = useRouter();
   return (
     <Grid item xs={12} mb={2}>
       <Stack spacing={0.5}>
         <InputLabel>{label} *</InputLabel>
-        {formik.values[index] === undefined && (
-          <Button variant="outlined" component="label">
-            <CloudUploadOutlined />
-            <Typography ml={1}>Upload {label}</Typography>
-            <input
-              accept={acceptFileTypes}
-              multiple
-              hidden
-              type="file"
-              onChange={(ev) => {
-                if (ev.currentTarget.files && ev.currentTarget.files[0]) {
-                  formik.setFieldValue(index, ev.currentTarget.files[0]);
-                }
-              }}
-            />
-          </Button>
-        )}
-        {formik.values[index] && (
+        {query.projectId === 'add' && (
           <>
-            <Stack
-              direction="row"
-              spacing={2}
-              alignItems="center"
-              bgcolor={antColors.blue[0]}
-              px={2}
-              borderRadius={1}
-              py={0.5}
-              justifyContent="space-between"
-            >
-              <Typography>{formik.values[index].name}</Typography>
-              <IconButton onClick={() => formik.setFieldValue(index, undefined)}>
-                <CloseCircleOutlined style={{ color: antColors.blue[4] }} aria-label="Review" title="Review" />
-              </IconButton>
-            </Stack>
+            {formik.values[index] === undefined && (
+              <Button variant="outlined" component="label">
+                <CloudUploadOutlined />
+                <Typography ml={1}>Upload {label}</Typography>
+                <input
+                  accept={acceptFileTypes}
+                  multiple
+                  hidden
+                  type="file"
+                  onChange={(ev) => {
+                    if (ev.currentTarget.files && ev.currentTarget.files[0]) {
+                      formik.setFieldValue(index, ev.currentTarget.files[0]);
+                    }
+                  }}
+                />
+              </Button>
+            )}
+            {formik.values[index] && (
+              <>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  alignItems="center"
+                  bgcolor={antColors.grey[4]}
+                  px={2}
+                  borderRadius={1}
+                  py={0.5}
+                  justifyContent="space-between"
+                >
+                  <Typography>{formik.values[index].name}</Typography>
+                  <IconButton onClick={() => formik.setFieldValue(index, undefined)}>
+                    <CloseCircleOutlined style={{ color: antColors.blue[4] }} aria-label="Close" title="Close" />
+                  </IconButton>
+                </Stack>
+              </>
+            )}
+            {formik.touched[index] && formik.errors[index] && (
+              <FormHelperText error id={`standard-weight-helper-text-${index}-login`}>
+                {formik.errors[index]}
+              </FormHelperText>
+            )}
           </>
         )}
-        {formik.touched[index] && formik.errors[index] && (
-          <FormHelperText error id={`standard-weight-helper-text-${index}-login`}>
-            {formik.errors[index]}
-          </FormHelperText>
+        {query.projectId !== 'add' && (
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            bgcolor={antColors.grey[4]}
+            px={2}
+            borderRadius={1}
+            py={0.5}
+            justifyContent="space-between"
+          >
+            <Typography>{formik.values[index].name}</Typography>
+            <IconButton onClick={() => formik.setFieldValue(index, undefined)}>
+              <EyeOutlined style={{ color: antColors.blue[4] }} aria-label="Review" title="Review" />
+            </IconButton>
+          </Stack>
         )}
       </Stack>
     </Grid>
@@ -103,6 +128,7 @@ interface DocumentsFormProps {
 const acceptFileTypes = 'application/msword, application/vnd.ms-excel, application/vnd.ms-powerpoint, text/plain, application/pdf, image/*';
 
 export default function DocumentsForm({ documents, setDocuments, handleNext, projectId }: DocumentsFormProps) {
+  const [isSubmitting, setSubmitting] = useState<boolean>(false);
   const router = useRouter();
   const { data: session } = useSession();
   const formik = useFormik({
@@ -116,6 +142,7 @@ export default function DocumentsForm({ documents, setDocuments, handleNext, pro
     },
     validationSchema,
     onSubmit: (values) => {
+      setSubmitting(true);
       const shipDocuments = {
         technicalReport: values.technicalReport,
         financialReport: values.financialReport,
@@ -136,18 +163,22 @@ export default function DocumentsForm({ documents, setDocuments, handleNext, pro
       setDocuments(shipDocuments);
       axios.defaults.headers.common = { Authorization: `bearer ${session?.token.accessToken as string}` };
       axios
-        .post(`${process.env.SHIPFINEX_BACKEND_URL}/project/${projectId}/documents`, formData)
+        .post(`/api/v1/project/${projectId}/documents`, formData)
         .then(async (res) => {
-          if (res.status === 401) {
-            signOut({ redirect: false });
+          if (res.status === 200) {
+            handleNext();
 
-            router.push({
-              pathname: '/signin',
-              query: {}
+            enqueueSnackbar('Documents uploaded successfully.', {
+              variant: 'success',
+              anchorOrigin: { vertical: 'top', horizontal: 'right' }
             });
           } else {
-            handleNext();
+            enqueueSnackbar('Documents uploading failed.', {
+              variant: 'error',
+              anchorOrigin: { vertical: 'top', horizontal: 'right' }
+            });
           }
+          setSubmitting(false);
         })
         .catch((err) => {
           console.log(err);
@@ -170,7 +201,7 @@ export default function DocumentsForm({ documents, setDocuments, handleNext, pro
             <Grid item xs={12}>
               <Stack direction="row" justifyContent="end">
                 <AnimateButton>
-                  <Button variant="contained" type="submit" sx={{ my: 3, ml: 1 }}>
+                  <Button variant="contained" type="submit" sx={{ my: 3, ml: 1 }} disabled={isSubmitting}>
                     Upload Documents
                   </Button>
                 </AnimateButton>

@@ -1,5 +1,4 @@
 import { ReactElement, useEffect, useState } from 'react';
-import { signOut } from 'next-auth/react';
 
 // material-ui
 import { Box, Stack, InputLabel, TextField, Grid, Switch } from '@mui/material';
@@ -41,14 +40,7 @@ const InvestorDetail = () => {
     const fetchInvestors = () => {
       fetch(`/api/user/${router.query.investorId}`)
         .then(async (res) => {
-          if (res.status === 401) {
-            signOut({ redirect: false });
-
-            router.push({
-              pathname: '/signin',
-              query: {}
-            });
-          } else {
+          if (res.status === 200) {
             setInvestor(await res.json());
           }
         })

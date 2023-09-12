@@ -18,7 +18,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         try {
-          const res = await axios.post('/user/login', {
+          const res = await axios.post('/api/v1/user/login', {
             password: credentials?.password,
             email: credentials?.email
           });
@@ -26,11 +26,9 @@ export const authOptions: NextAuthOptions = {
           if (res.data && res.data.msg === 'Email verification has sent to your email') {
             throw new Error('email not verified');
           }
-          console.log('After signin ->', res.data);
 
           return { email: credentials?.email, id: '' };
         } catch (error: any) {
-          console.log('After signin error ->', error.response.data);
           throw new Error('Invalid Email or Password');
         }
       }
@@ -49,7 +47,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         try {
-          const user = await axios.post('/user/register', {
+          const user = await axios.post('/api/v1/user/register', {
             firstName: credentials?.firstName,
             lastName: credentials?.lastName,
             email: credentials?.email,
@@ -82,11 +80,10 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         try {
-          const user = await axios.post('/user/verify-otp', {
+          const user = await axios.post('/api/v1/user/verify-otp', {
             email: credentials?.email,
             otp: credentials?.otp
           });
-          console.log('After verifyOtp ->', user.data);
           return {
             id: '',
             email: credentials?.email,
@@ -100,7 +97,6 @@ export const authOptions: NextAuthOptions = {
           };
         } catch (error: any) {
           var errors;
-          console.log('After verifyOtp error->', error.response.data);
           if (error.response.data) {
             errors = JSON.stringify(error.response.data.msg);
           } else {
@@ -126,16 +122,7 @@ export const authOptions: NextAuthOptions = {
         token.walletAddress = (user as any).walletAddress;
         token.cusId = (user as any).cusId;
       }
-      return {
-        id: token.id,
-        email: token.email,
-        accessToken: token.accessToken,
-        fullName: token.fullName,
-        role: token.role,
-        kycStatus: token.kycStatus,
-        walletAddress: token.walletAddress,
-        cusId: token.cusId
-      };
+      return token;
     },
     session: ({ session, token }) => {
       if (token) {

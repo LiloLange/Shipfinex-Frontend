@@ -29,7 +29,7 @@ export default function Slider(theme: Theme) {
           width: 14,
           height: 14,
           border: `2px solid ${theme.palette.primary.main}`,
-          backgroundColor: theme.palette.background.paper,
+          backgroundColor: theme.palette.primary,
           '&.MuiSlider-thumbColorPrimary': getColorStyle({ color: 'primary', theme }),
           '&.MuiSlider-thumbColorSecondary': getColorStyle({ color: 'secondary', theme }),
           '&.MuiSlider-thumbColorSuccess': getColorStyle({ color: 'success', theme }),
@@ -49,6 +49,11 @@ export default function Slider(theme: Theme) {
             borderWidth: 2
           }
         },
+        markLabel: {
+          '&:not(.MuiSlider-markLabelActive)': {
+            transform: 'translateX(-100%)'
+          }
+        },
         rail: {
           color: theme.palette.secondary.light
         },
@@ -58,15 +63,15 @@ export default function Slider(theme: Theme) {
               opacity: 0.25
             },
             '.MuiSlider-track': {
-              color: theme.palette.secondary.lighter
+              color: theme.palette.primary
             },
             '.MuiSlider-thumb': {
-              border: `2px solid ${theme.palette.secondary.lighter}`
+              border: `2px solid ${theme.palette.primary}`
             }
           }
         },
-        valueLabel: {
-          backgroundColor: theme.palette.grey[600],
+        valueLabelOpen: {
+          backgroundColor: theme.palette.primary,
           color: theme.palette.grey[0]
         }
       }

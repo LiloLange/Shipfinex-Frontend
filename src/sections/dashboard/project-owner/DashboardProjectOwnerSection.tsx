@@ -2,7 +2,6 @@
 import { Grid } from '@mui/material';
 
 // project imports
-import InvestorsCard from './InvestorsCard';
 import ProjectsCard from './ProjectsCard';
 import RewardsCard from './RewardsCard';
 import StatisticsCard from './StatisticsCard';
@@ -16,9 +15,9 @@ const DashboardProjectOwnerSection = () => {
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Grid container spacing={3} alignItems={'stretch'}>
-            <Grid item xs={12} md={4}>
+            {/* <Grid item xs={12} md={4}>
               <InvestorsCard />
-            </Grid>
+            </Grid> */}
             <Grid item xs={12} md={4}>
               <ProjectsCard />
             </Grid>
