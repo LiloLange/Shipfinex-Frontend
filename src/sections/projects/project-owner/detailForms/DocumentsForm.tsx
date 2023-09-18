@@ -2,18 +2,19 @@ import { useState } from 'react';
 
 // next
 import { useRouter } from 'next/router';
-import axios from 'utils/axios';
 import { useSession } from 'next-auth/react';
 
 // material-ui
-import { Button, FormHelperText, Grid, IconButton, InputLabel, Stack, Typography } from '@mui/material';
+import { Button, FormHelperText, Grid, IconButton, InputLabel, Link, Stack, Typography } from '@mui/material';
 
 // third-party
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 
 // project imports
+import axios from 'utils/axios';
 import AnimateButton from 'components/@extended/AnimateButton';
+
 // assets
 import { CloudUploadOutlined, CloseCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import * as antColors from '@ant-design/colors';
@@ -93,13 +94,13 @@ const BootstrapFormItem = ({ label, index, formik }: BootstrapFormItemProps) => 
             bgcolor={antColors.grey[4]}
             px={2}
             borderRadius={1}
-            py={0.5}
+            py={1.5}
             justifyContent="space-between"
           >
-            <Typography>{formik.values[index].name}</Typography>
-            <IconButton onClick={() => formik.setFieldValue(index, undefined)}>
+            <Typography>{label}</Typography>
+            <Link href={`${process.env.SHIPFINEX_BACKEND_URL}${formik.values[index]}`} target="_blank">
               <EyeOutlined style={{ color: antColors.blue[4] }} aria-label="Review" title="Review" />
-            </IconButton>
+            </Link>
           </Stack>
         )}
       </Stack>
@@ -165,25 +166,21 @@ export default function DocumentsForm({ documents, setDocuments, handleNext, pro
       axios
         .post(`/api/v1/project/${projectId}/documents`, formData)
         .then(async (res) => {
-          if (res.status === 200) {
-            handleNext();
-
-            enqueueSnackbar('Documents uploaded successfully.', {
-              variant: 'success',
-              anchorOrigin: { vertical: 'top', horizontal: 'right' }
-            });
-          } else {
-            enqueueSnackbar('Documents uploading failed.', {
-              variant: 'error',
-              anchorOrigin: { vertical: 'top', horizontal: 'right' }
-            });
-          }
+          handleNext();
+          enqueueSnackbar('Documents successfully uploaded.', {
+            variant: 'success',
+            anchorOrigin: { vertical: 'top', horizontal: 'right' }
+          });
           setSubmitting(false);
         })
         .catch((err) => {
           console.log(err);
+          enqueueSnackbar('Documents uploading failed.', {
+            variant: 'error',
+            anchorOrigin: { vertical: 'top', horizontal: 'right' }
+          });
+          setSubmitting(false);
         });
-      handleNext();
     }
   });
 

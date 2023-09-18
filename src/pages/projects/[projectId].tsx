@@ -71,7 +71,7 @@ const ProjectDetail = () => {
           estimatedEarning: data.estimatedEarning,
           id: data._id
         });
-        setDocuments(data.documents);
+        setDocuments(data.documents || {});
         setTokenization({ ...data.tokenization, tokenized: data.tokenized });
         setLoading(false);
       })

@@ -94,23 +94,20 @@ export default function TokenizationForm({ tokenization, setTokenization, projec
       axios
         .post(`/api/v1/project/${projectId}/tokenization`, tokenInfo)
         .then(async (res) => {
-          if (res.status === 200) {
-            enqueueSnackbar('Tokenized successfully.', {
-              variant: 'success',
-              anchorOrigin: { vertical: 'top', horizontal: 'right' }
-            });
+          enqueueSnackbar('Tokenized successfully.', {
+            variant: 'success',
+            anchorOrigin: { vertical: 'top', horizontal: 'right' }
+          });
 
-            setTokenization(tokenInfo);
-            router.push('/projects');
-          } else {
-            enqueueSnackbar('Tokenized failed.', {
-              variant: 'success',
-              anchorOrigin: { vertical: 'top', horizontal: 'right' }
-            });
-          }
-          setSubmitting(false);
+          setTokenization(tokenInfo);
+          router.push('/projects');
         })
         .catch((err) => {
+          enqueueSnackbar('Tokenized failed.', {
+            variant: 'success',
+            anchorOrigin: { vertical: 'top', horizontal: 'right' }
+          });
+          setSubmitting(false);
           console.log(err);
         });
     }

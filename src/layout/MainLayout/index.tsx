@@ -76,7 +76,7 @@ const MainLayout = ({ children }: Props) => {
           sx={{
             ...(container && { p: { xs: 2, sm: 4 } }),
             position: 'relative',
-            minHeight: !downLG ? 'calc(100vh - 40px)' : 'calc(100vh - 110px)',
+            minHeight: !downLG ? 'calc(100vh - 50px)' : 'calc(100vh - 110px)',
             mt: !downLG ? 'auto' : '60px',
             display: 'flex',
             flexDirection: 'column',

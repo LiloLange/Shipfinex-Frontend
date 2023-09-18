@@ -1,6 +1,3 @@
-// next
-import NextLink from 'next/link';
-
 // material-ui
 import { Grid, IconButton, Link, Stack, Typography } from '@mui/material';
 
@@ -11,9 +8,10 @@ import * as antColors from '@ant-design/colors';
 type BootstrapFormItemProps = {
   label: string;
   index: string;
+  data: any;
 };
 
-const BootstrapFormItem = ({ label, index }: BootstrapFormItemProps) => {
+const BootstrapFormItem = ({ label, index, data }: BootstrapFormItemProps) => {
   const handleReviewClick = () => {};
 
   return (
@@ -29,13 +27,11 @@ const BootstrapFormItem = ({ label, index }: BootstrapFormItemProps) => {
         justifyContent="space-between"
       >
         <Typography>{label}</Typography>
-        <NextLink href="/" passHref legacyBehavior>
-          <Link>
-            <IconButton onClick={handleReviewClick}>
-              <EyeOutlined style={{ color: antColors.blue[4] }} aria-label="Review" title="Review" />
-            </IconButton>
-          </Link>
-        </NextLink>
+        <Link href={`${process.env.SHIPFINEX_BACKEND_URL}${data[index]}`} target="_blank">
+          <IconButton onClick={handleReviewClick}>
+            <EyeOutlined style={{ color: antColors.blue[4] }} aria-label="Review" title="Review" />
+          </IconButton>
+        </Link>
       </Stack>
     </Grid>
   );
@@ -60,12 +56,12 @@ export default function DocumentsForm({ documents }: DocumentsFormProps) {
   return (
     <>
       <Grid container spacing={1}>
-        <BootstrapFormItem index="technicalReport" label="Technical Reports" />
-        <BootstrapFormItem index="financialReport" label="Financial Reports" />
-        <BootstrapFormItem index="commercialReport" label="Commercial Reports" />
-        <BootstrapFormItem index="risk" label="Risk" />
-        <BootstrapFormItem index="community" label="Community" />
-        <BootstrapFormItem index="vesselCertificate" label="Vessel Certificates" />
+        <BootstrapFormItem index="technicalReport" label="Technical Reports" data={documents} />
+        <BootstrapFormItem index="financialReport" label="Financial Reports" data={documents} />
+        <BootstrapFormItem index="commercialReport" label="Commercial Reports" data={documents} />
+        <BootstrapFormItem index="risk" label="Risk" data={documents} />
+        <BootstrapFormItem index="community" label="Community" data={documents} />
+        <BootstrapFormItem index="vesselCertificate" label="Vessel Certificates" data={documents} />
       </Grid>
     </>
   );

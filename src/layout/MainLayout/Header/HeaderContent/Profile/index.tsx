@@ -43,7 +43,7 @@ const Profile = () => {
   const router = useRouter();
 
   const handleLogout = async () => {
-    await signOut({ redirect: true });
+    await signOut({ redirect: false });
 
     router.push({
       pathname: '/signin',
@@ -106,12 +106,13 @@ const Profile = () => {
         )}
       </ButtonBase>
       <Popper
-        placement="bottom-end"
+        placement="top-end"
         open={open}
         anchorEl={anchorRef.current}
         role={undefined}
         transition
         disablePortal
+        style={{ zIndex: 99999 }}
         popperOptions={{
           modifiers: [
             {

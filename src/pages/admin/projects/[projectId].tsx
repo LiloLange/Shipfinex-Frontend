@@ -27,7 +27,7 @@ const ProjectDetail = () => {
   const [tab, setTab] = useState<number>(0);
   const [shipDetail, setShipDetail] = useState<any>({});
   const [tokenization, setTokenization] = useState<any>({});
-  const [documents /* , setDocuments */] = useState<any>({});
+  const [documents, setDocuments] = useState<any>({});
   const { data: session } = useSession();
   const router = useRouter();
   const [isLoading, setLoading] = useState<boolean>(true);
@@ -57,6 +57,7 @@ const ProjectDetail = () => {
           builtYear: data.builtYear,
           flag: data.flag
         });
+        setDocuments(data.documents || {});
         setTokenization(data.tokenization);
         setLoading(false);
       })

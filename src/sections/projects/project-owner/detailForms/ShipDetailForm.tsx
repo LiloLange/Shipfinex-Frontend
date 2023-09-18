@@ -127,27 +127,23 @@ export default function ShipDetailForm({ shipDetail, setShipDetail, handleNext }
       axios
         .post(`/api/v1/project/register`, formData)
         .then(async (res) => {
-          if (res.status === 201) {
-            setSubmitting(false);
+          shipDetail.id = res.data._id;
+          setShipDetail(shipDetail);
+          handleNext();
 
-            shipDetail.id = res.data._id;
-            setShipDetail(shipDetail);
-            handleNext();
+          enqueueSnackbar('Project registered successfully.', {
+            variant: 'success',
+            anchorOrigin: { vertical: 'top', horizontal: 'right' }
+          });
 
-            enqueueSnackbar('Project registered successfully.', {
-              variant: 'success',
-              anchorOrigin: { vertical: 'top', horizontal: 'right' }
-            });
-          } else {
-            enqueueSnackbar('Project registeration failed.', {
-              variant: 'success',
-              anchorOrigin: { vertical: 'top', horizontal: 'right' }
-            });
-            setSubmitting(false);
-            console.log(res);
-          }
+          setSubmitting(false);
         })
         .catch((err) => {
+          enqueueSnackbar('Project registeration failed.', {
+            variant: 'success',
+            anchorOrigin: { vertical: 'top', horizontal: 'right' }
+          });
+          setSubmitting(false);
           console.log(err);
         });
     }

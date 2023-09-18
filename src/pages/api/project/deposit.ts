@@ -19,6 +19,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(200).json(response.data);
     }
   } else {
-    res.status(404).send({ error: 'No permission' });
+    res.status(404).send({ error: 'No permission error' });
   }
 }

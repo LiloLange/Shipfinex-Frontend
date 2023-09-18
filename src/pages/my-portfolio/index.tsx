@@ -37,7 +37,7 @@ const MyPortfolio = () => {
 
   return (
     <Page title="My Portfolio">
-      {session && (session.token.kycStatus === undefined || session?.token.kycStatus === 2) && (
+      {session && (session.token.kycStatus === undefined || session?.token.kycStatus === 0) && (
         <Box width="max-content" mx="auto" my={18}>
           <Paper style={{ backgroundColor: 'transparent' }}>
             <Stack mt={6} spacing={1} alignItems="center" pt={6} pb={4} px={8}>
@@ -66,7 +66,7 @@ const MyPortfolio = () => {
           </Paper>
         </Box>
       )}
-      {session && session.token.kycStatus === 0 && session.token.role === UserRole.INVESTOR && (
+      {session && session.token.kycStatus === 2 && session.token.role === UserRole.INVESTOR && (
         <Grid container spacing={4.5}>
           <Grid item xs={12}>
             <Grid container spacing={2}>
@@ -94,7 +94,7 @@ const MyPortfolio = () => {
           </Grid>
         </Grid>
       )}
-      {session && session.token.kycStatus === 2 && session.token.role === UserRole.PROJECT_OWNER && (
+      {session && session.token.kycStatus === 1 && session.token.role === UserRole.PROJECT_OWNER && (
         <Box width="max-content" mx="auto" my={18}>
           <Paper>
             <Stack mt={6} spacing={3} alignItems="center" pt={6} pb={4} px={8}>

@@ -2,7 +2,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 // project imports
-import axios from 'utils/axios';
+import axios from 'axios';
 import { dispatch } from '../index';
 
 // types
@@ -10,6 +10,7 @@ import { ChatStateProps } from 'types/chat';
 
 // ==============================|| SLICE - CHAT||============================== //
 
+const backendURL: string = process.env.SHIPFINEX_BACKEND_URL as string;
 const initialState: ChatStateProps = {
   error: null,
   chats: [],
@@ -62,7 +63,7 @@ export function getUser(id: number) {
 export function getUserChats(user: string | undefined) {
   return async () => {
     try {
-      const response = await axios.post('/api/chat/filter', { user });
+      const response = await axios.post(`${backendURL}/api/v1/chat/filter`, { user });
       dispatch(chat.actions.getUserChatsSuccess(response.data));
     } catch (error) {
       dispatch(chat.actions.hasError(error));
@@ -73,7 +74,7 @@ export function getUserChats(user: string | undefined) {
 export function insertChat(newChat: any) {
   return async () => {
     try {
-      await axios.post('/api/chat/insert', { chat: newChat });
+      await axios.post(`${backendURL}/api/v1/chat/insert`, { chat: newChat });
     } catch (error) {
       dispatch(chat.actions.hasError(error));
     }
@@ -83,7 +84,7 @@ export function insertChat(newChat: any) {
 export function getUsers() {
   return async () => {
     try {
-      const response = await axios.get('/api/chat/users');
+      const response = await axios.get(`${backendURL}/api/v1/chat/users`);
       dispatch(chat.actions.getUsersSuccess(response.data.users));
     } catch (error) {
       dispatch(chat.actions.hasError(error));
